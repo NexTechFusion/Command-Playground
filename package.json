@@ -1,0 +1,27 @@
+{
+  "name": "rawen-command-maker",
+  "version": "0.0.1",
+  "scripts": {
+    "fitness-trainer": "nodemon ./src/fitness-trainer.ts",
+    "start": "nodemon ./src/index.ts",
+    "build": "webpack"
+  },
+  "dependencies": {
+    "@huggingface/inference": "^2.6.4",
+    "nodemon": "^3.0.1",
+    "replicate": "^0.18.1"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.14",
+    "langchain": "^0.0.186",
+    "nodemon": "^2.0.15",
+    "openai": "^4.17.4",
+    "ts-loader": "^9.5.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^5.2.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "author": "NexTechFusion",
+  "license": "MIT"
+}

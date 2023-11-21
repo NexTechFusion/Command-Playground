@@ -32,7 +32,7 @@ You can find neat functions in the documentation <a href="https://rawen.io/docs"
 ###  Direct context summarization
 Summarizes the active window context.
 
-https://github.com/NexTechFusion/Command-Playground/assets/136065228/cbf791dc-d6b9-4284-b8cb-ebbcb7035469
+https://github.com/NexTechFusion/Command-Playground/assets/136065228/1df7eb93-3a1e-4bd8-b32b-1851debcade7
 
 
 2. Add your openAi key

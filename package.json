@@ -6,6 +6,7 @@
     "mark-inform": "nodemon ./src/mark-inform.ts",
     "ask-knowledge-voice": "nodemon ./src/ask-knowledge-by-voice.ts",
     "mark-to-code": "nodemon ./src/mark-to-code.ts",
+    "summarize-context": "nodemon ./src/summarize-context.ts",
     "build": "webpack"
   },
   "dependencies": {

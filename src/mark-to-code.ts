@@ -28,6 +28,34 @@ Return only the full code in <html></html> tags.
 `;
 //https://github.com/abi/screenshot-to-code inspired by this
 
+async function main() {
+    const result = await markArea();
+
+    await openApp({
+        height: 800,
+        width: 1024,
+    });
+    await addHeaderContent("Analyzing image...");
+    const imageBase64 = "data:image/png;base64," + result.fileBuffer.toString("base64");
+    await addContent("<img width='256' src='" + imageBase64 + "' /> <br>");
+
+    await addHeaderContent("Generating code...");
+    const stream = await image2textOpenAi(imageBase64);
+
+    let code = "";
+    for await (const chunk of stream) {
+        code += chunk;
+        await pushContentStream(chunk);
+    }
+    await stopStream();
+
+    const parse = extractCode(code);
+    await openNewWindow(parse, {
+        bringToFront: true
+    });
+}
+
+
 async function image2textOpenAi(imageBase64: string) {
     const chat = new ChatOpenAI({
         modelName: "gpt-4-vision-preview",
@@ -55,34 +83,9 @@ async function image2textOpenAi(imageBase64: string) {
     });
     return result;
 }
-async function main() {
-    const result = await markArea();
 
-    await openApp({
-        height: 800,
-        width: 1024,
-    });
-    await addHeaderContent("Analyzing image...");
-    const imageBase64 = "data:image/png;base64," + result.fileBuffer.toString("base64");
-    await addContent("<img width='256' src='" + imageBase64 + "' /> <br>");
-
-    await addHeaderContent("Generating code...");
-    const stream = await image2textOpenAi(imageBase64);
-
-    let code = "";
-    for await (const chunk of stream) {
-        code += chunk;
-        await pushContentStream(chunk);
-    }
-    await stopStream();
-
-    const parse = parseResultToList(code);
-    await openNewWindow(parse, {
-        bringToFront: true
-    });
-}
-
-function parseResultToList(inputString) {
+// lazy c&p from open-interpreter.js...
+function extractCode(inputString) {
     const lines = inputString.split('\n');
     const result = [];
     let currentBlock = null;

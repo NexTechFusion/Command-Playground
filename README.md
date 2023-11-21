@@ -32,7 +32,7 @@ You can find neat functions in the documentation <a href="https://rawen.io/docs"
 ### Take 1 - Fitness trainer
 Turns on the cam and watches and comments your fitness exercises.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/qKKtsUFFxTU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Fitness trainer got](http://img.youtube.com/vi/qKKtsUFFxTU/0.jpg)](http://www.youtube.com/watch?v=qKKtsUFFxTU "Fitness trainer")
 
 
 Using : GPT-4-Vision

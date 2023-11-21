@@ -3,13 +3,16 @@
   "version": "0.0.1",
   "scripts": {
     "fitness-trainer": "nodemon ./src/fitness-trainer.ts",
-    "start": "nodemon ./src/index.ts",
+    "mark-inform": "nodemon ./src/mark-inform.ts",
+    "ask-knowledge-voice": "nodemon ./src/ask-knowledge-by-voice.ts",
+    "mark-to-code": "nodemon ./src/mark-to-code.ts",
     "build": "webpack"
   },
   "dependencies": {
     "@huggingface/inference": "^2.6.4",
     "nodemon": "^3.0.1",
-    "replicate": "^0.18.1"
+    "replicate": "^0.18.1",
+    "@xenova/transformers": "^2.8.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.14",

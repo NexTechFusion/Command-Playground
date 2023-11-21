@@ -1,8 +1,7 @@
 const key = "test";
 const serverUrl = "http://localhost:3440/execute";
 
-async function codeExec(code: string): Promise<any> {
-    console.log(`Executing code: ${code}`);
+async function codeExec(code: string, retryCount = 0): Promise<any> {
     try {
         const req: ExternalCodeRequest = { code, key };
         const response = await fetch(serverUrl, {
@@ -21,14 +20,30 @@ async function codeExec(code: string): Promise<any> {
         return data.result;
     } catch (e) {
         console.log(e);
-        throw new Error(e);
+        retryCount++;
+        if (retryCount === 3) {
+            throw new Error(e);
+        }
+        return codeExec(code, retryCount);
     }
 }
 
 // Opens the app with the given options
-export async function openApp(options?: { width?: number, height?: number, focus?: boolean, bringToFront?: boolean, prompt?: string }) {
+export async function openApp(options?: { width?: number, height?: number, focus?: boolean, bringToFront?: boolean, prompt?: string, stickTo?: "Right" | "Left" }) {
     const code = `await openApp(${JSON.stringify(options ?? {})});`;
     await codeExec(code);
+}
+
+export async function getAllDocs(): Promise<DocumentData[]> {
+    const code = `return await getAllDocs();`;
+    const docs = await codeExec(code);
+    return docs;
+}
+
+export async function getDocsBySimilarity(text: string, topK: number = 2): Promise<DocumentData[]> {
+    const code = `return await getDocsBySimilarity(\`${stripChars(text)}\`, ${topK});`;
+    const docs = await codeExec(code);
+    return docs;
 }
 
 // Saves the text to the instance knowledge base
@@ -51,8 +66,11 @@ export async function newInteraction(): Promise<string> {
 }
 
 // Gets the current interaction results 
-export async function getInteractionResults(): Promise<any[]> {
-    const code = `return await getInteractionResults();`;
+export async function getInteractionState(): Promise<{
+    conversationId: string,
+    history: LlmResultModel[]
+}> {
+    const code = `return await getInteractionState();`;
     const results = await codeExec(code);
     return results;
 }
@@ -104,6 +122,12 @@ export async function getKeyValues(): Promise<KeyValueSetting[]> {
     return keyValues;
 }
 
+export async function getOpenAiSettings(): Promise<OpenAiKeyValueSetting> {
+    const settings = await getKeyValues();
+    const openAiSettings = settings.find(s => s.id === DefaultKeys.OPENAI);
+    return openAiSettings;
+}
+
 export async function getCommands(): Promise<CommandModel[]> {
     const code = `return await getCommands();`;
     const commands = await codeExec(code);
@@ -115,52 +139,57 @@ export async function executeCommand<T>(input: string, cmdId: string): Promise<T
     return await codeExec(code);
 }
 
-export async function addPrompt(cmd: string, taskName: string = "", sus: any[] = []): Promise<void> {
-    const code = `await addInteractionPrompt(getConvoId(), \`${cmd}\`, \`${taskName}\`, ${JSON.stringify(sus)});`;
+export async function addHeaderContent(html: string): Promise<void> {
+    const code = `addHeaderContent(\`${stripChars(html)}\`);`;
     await codeExec(code);
 }
 
-export async function updatePrompt(result: string): Promise<void> {
-    const code = `await updatePrompt(\`${result}\`);`;
+export async function updateHeaderConent(html: string): Promise<void> {
+    const code = `updateHeaderConent(\`${stripChars(html)}\`);`;
     await codeExec(code);
 }
 
-export async function addResult(result: string): Promise<void> {
-    const code = `await addResult(\`${result}\`);`;
+export async function addContent(result: string): Promise<void> {
+    const code = `addContent(\`${stripChars(result)}\`);`;
     await codeExec(code);
 }
 
 export async function pushResultLog(log: string): Promise<void> {
-    const code = `await pushResultLog(\`${log}\`);`;
+    const code = `pushResultLog(\`${stripChars(log)}\`);`;
     await codeExec(code);
 }
 
-export async function pushHtml(html: string): Promise<void> {
-    const code = `await pushHtml(\`${html}\`);`;
+export async function pushContentStream(token: string): Promise<void> {
+    const code = `pushContentStream(\`${stripChars(token)}\`);`;
     await codeExec(code);
 }
 
-export async function pushResultStream(token: string): Promise<void> {
-    const code = `pushResultStream(\`${token}\`);`;
+export async function stopStream(): Promise<void> {
+    const code = `endStream();`;
     await codeExec(code);
 }
 
-export async function pushInlineConfirm(text: string, buttons: { text: string, action: () => void }[]): Promise<void> {
-    const buttonsenc = buttons ? buttons.map(b => ({ ...b, action: b.action.toString() })) : null;
-    const code = `await pushInlineConfirm(\`${text}\`, ${buttons ? JSON.stringify(buttonsenc) : null});`;
+export async function startStream(): Promise<void> {
+    const code = `await startStream();`;
     await codeExec(code);
 }
 
-export async function startAudioRecording(): Promise<any[]> {
+export async function pushInlineConfirm(text: string, buttons: { text: string, classes?: string }[]): Promise<void> {
+    const code = `return await pushInlineConfirm(\`${stripChars(text)}\`, ${JSON.stringify(buttons)});`;
+    return await codeExec(code);
+}
+
+// VAD and stops the audio recording if a voice ended
+export async function startAudioRecording(): Promise<Buffer | null> {
     const code = `return await startAudioRecording();`;
-    const autidoChunks = await codeExec(code);
-    return autidoChunks;
+    const bufferStr = await codeExec(code);
+    return bufferStr ? Buffer.from(JSON.parse(bufferStr)) : null;
 }
 
-export async function stopAudioRecording(): Promise<void> {
-    const code = `stopAudioRecording();`;
-    await codeExec(code);
-}
+// export async function stopAudioRecording(): Promise<void> {
+//     const code = `stopAudioRecording();`;
+//     await codeExec(code);
+// }
 
 export async function getMarkedText(): Promise<string> {
     const code = `return await getMarkedText();`;
@@ -259,6 +288,10 @@ export async function openCameraStreamWindow(): Promise<void> {
     await codeExec(code);
 }
 
+function stripChars(text: string): string {
+    return text.replace(/`/g, '\\`')
+}
+
 export interface ExternalCodeRequest {
     key: string;
     code: string;
@@ -285,18 +318,15 @@ export interface BrowserWindowOptions {
     bringToFront?: boolean
     focus?: boolean,
     asFile?: string,
-    code: string
+    code?: string
 }
 export interface LlmResultModel {
-    input: string;
-    result?: string;
+    header?: string;
+    content?: string;
     date: Date;
-    resultDate?: Date;
-    taskName?: string;
-    sources?: any[];
-    html?: string[];
+    sources?: DocumentData[];
     logs?: string[];
-    inlineElements?: any[];
+    confirmElements?: { text: string, classes?: string }[];
 }
 
 export interface CommandModel {
@@ -310,7 +340,27 @@ export interface KeyValueSetting {
     isDefault?: boolean;
 }
 
+export interface OpenAiKeyValueSetting extends KeyValueSetting {
+    values: OpenAiValues;
+}
+
+export interface OpenAiValues {
+    ApiKey: string | undefined,
+    Model: string | undefined
+}
+
 export enum DefaultKeys {
     ALEPH = "ALEPH",
     OPENAI = "OPENAI"
+}
+
+export interface DocumentData {
+    pageContent: string;
+    metadata: DocumentMetaData;
+}
+
+export interface DocumentMetaData {
+    file_date: string;
+    file_name: string;
+    file_type: string
 }

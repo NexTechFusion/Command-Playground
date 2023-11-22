@@ -1,4 +1,4 @@
-import { addContent, addHeaderContent, addInteractionContent, getDocsBySimilarity, getInteractionState, pushContentStream, startAudioRecording, stopStream, } from "../sdk/main";
+import { addContent, addHeaderContent, addInteractionContent, getDocsBySimilarity, getInteractionState, pushContentStream, startAudioRecording, stopStream, } from "../../sdk/main";
 import OpenAI, { toFile } from "openai";
 import { RunnableSequence } from "langchain/schema/runnable";
 import { PromptTemplate } from "langchain/prompts";

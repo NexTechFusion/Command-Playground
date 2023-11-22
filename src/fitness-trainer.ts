@@ -1,5 +1,5 @@
 import { addHeaderContent, getWindows, openCameraStreamWindow, playAudio, pushContentStream } from "../sdk/main";
-import { text2speech } from "./coqui_text-to-speech-api";
+import { text2speech } from "./utils/coqui_text-to-speech-api";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { AIMessage, HumanMessage, SystemMessage } from "langchain/schema";
 import { ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";

@@ -154,8 +154,8 @@ export async function addContent(result: string): Promise<void> {
     await codeExec(code);
 }
 
-export async function pushResultLog(log: string): Promise<void> {
-    const code = `pushResultLog(\`${stripChars(log)}\`);`;
+export async function pushLog(log: string): Promise<void> {
+    const code = `pushLog(\`${stripChars(log)}\`);`;
     await codeExec(code);
 }
 

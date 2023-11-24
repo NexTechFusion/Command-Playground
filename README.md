@@ -31,7 +31,7 @@ You can find neat functions in the documentation <a href="https://rawen.io/docs"
 
 ### Python exec. with Open Interpreter
 "Demonstration that you can execute Python scripts with commands, showcasing the famous interpreter : https://github.com/KillianLucas/open-interpreter
-
+See open-interpreter.ts and open-interpreter.py
 
 
 https://github.com/NexTechFusion/Command-Playground/assets/136065228/805d2b1c-64b8-4924-bb5a-d03b4557fdc8
@@ -44,7 +44,7 @@ Using : GPT
 
 
 ```sh
-npm start fitness-tracker
+npm start open-interpreter
 ```
 
 

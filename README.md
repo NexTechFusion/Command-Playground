@@ -29,25 +29,6 @@ You can find neat functions in the documentation <a href="https://rawen.io/docs"
 
 # Examples
 
-### Python exec. with Open Interpreter
-"Demonstration that you can execute Python scripts with commands, showcasing the famous interpreter : https://github.com/KillianLucas/open-interpreter
-See open-interpreter.ts and open-interpreter.py
-
-
-https://github.com/NexTechFusion/Command-Playground/assets/136065228/805d2b1c-64b8-4924-bb5a-d03b4557fdc8
-
-
-Using : GPT
-
-1. Add your openAi key
-2. Run the project
-
-
-```sh
-npm start open-interpreter
-```
-
-
 ###  Direct context summarization
 Summarizes the active window context.
 
@@ -117,3 +98,24 @@ Using : GPT-4-Vision
 ```sh
 npm start fitness-tracker
 ```
+
+
+### Python exec. with Open Interpreter
+"Demonstration that you can execute Python scripts with commands, showcasing the famous interpreter : https://github.com/KillianLucas/open-interpreter
+See open-interpreter.ts and open-interpreter.py
+
+
+https://github.com/NexTechFusion/Command-Playground/assets/136065228/a73df5ff-b3d2-472a-9265-7b103d981d9c
+
+
+
+Using : GPT
+
+1. Add your openAi key
+2. Run the project
+
+
+```sh
+npm start open-interpreter
+```
+

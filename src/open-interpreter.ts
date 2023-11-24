@@ -6,7 +6,7 @@ let pythonProcess: ChildProcessWithoutNullStreams;
 let stopTimeout: NodeJS.Timeout;
 const py_path = './src/open-interpreter.py';
 
-const api_key = "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";
+const api_key = "YOUR API KEY"; // would come over settings, for demonstration purposes as variable
 const question = "What operating system are we on?"; // coming from app prompt, for demonstration purposes as variable
 
 async function main() {

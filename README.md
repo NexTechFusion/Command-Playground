@@ -105,7 +105,10 @@ npm start fitness-tracker
 See open-interpreter.ts and open-interpreter.py
 
 
-https://github.com/NexTechFusion/Command-Playground/assets/136065228/a73df5ff-b3d2-472a-9265-7b103d981d9c
+
+https://github.com/NexTechFusion/Command-Playground/assets/136065228/64f80370-aff7-473e-afa4-0c5a1b60617b
+
+
 
 
 

@@ -174,8 +174,13 @@ export async function startStream(): Promise<void> {
     await codeExec(code);
 }
 
-export async function pushInlineConfirm(text: string, buttons: { text: string, classes?: string }[]): Promise<void> {
-    const code = `return await pushInlineConfirm(\`${stripChars(text)}\`, ${JSON.stringify(buttons)});`;
+export async function waitForConfirm(text: string, buttons: { text: string, classes?: string }[]): Promise<number> {
+    const code = `return await waitForConfirm(\`${stripChars(text)}\`, ${JSON.stringify(buttons)});`;
+    return await codeExec(code);
+}
+
+export async function waitForInput(): Promise<string> {
+    const code = `return await waitForInput();`;
     return await codeExec(code);
 }
 
@@ -186,10 +191,10 @@ export async function startAudioRecording(): Promise<Buffer | null> {
     return bufferStr ? Buffer.from(JSON.parse(bufferStr)) : null;
 }
 
-// export async function stopAudioRecording(): Promise<void> {
-//     const code = `stopAudioRecording();`;
-//     await codeExec(code);
-// }
+export async function stopAudioRecording(): Promise<void> {
+    const code = `stopAudioRecording();`;
+    await codeExec(code);
+}
 
 export async function getMarkedText(): Promise<string> {
     const code = `return await getMarkedText();`;
@@ -288,7 +293,16 @@ export async function openCameraStreamWindow(): Promise<void> {
     await codeExec(code);
 }
 
-function stripChars(text: string): string {
+// TODO encode properly
+function stripChars(text): string {
+    if (!text) {
+        return "";
+    }
+
+    if (typeof text !== "string") {
+        text = text.toString();
+    }
+
     return text.replace(/`/g, '\\`')
 }
 

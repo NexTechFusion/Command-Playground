@@ -1,7 +1,7 @@
 import { OpenAI } from "langchain/llms/openai";
 import { loadSummarizationChain } from "langchain/chains";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { addHeaderContent, getWindowText, openApp, pushContentStream, pushInlineConfirm, pushLog, stopStream } from "../sdk/main";
+import { addHeaderContent, getWindowText, openApp, pushContentStream, waitForConfirm, pushLog, stopStream } from "../sdk/main";
 
 async function summarize() {
     const text = await getWindowText();
@@ -22,7 +22,7 @@ async function summarize() {
     const docs = await textSplitter.createDocuments([text]);
 
     if (docs.length > 50) {
-        await pushInlineConfirm(`<div class='text-orange-400 text-lg text-center'> 
+        await waitForConfirm(`<div class='text-orange-400 text-lg text-center'> 
         <img src="https://media.tenor.com/OyWwTAp8PY0AAAAC/money-wallet.gif" width="128" class="m-auto mb-2 rounded-sm" />
         You summarizing a huge text, this would take some time and money. <br>
         </div>`, [{

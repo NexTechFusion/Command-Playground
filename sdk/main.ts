@@ -28,8 +28,20 @@ async function codeExec(code: string, retryCount = 0): Promise<any> {
     }
 }
 
+interface OpenAppOptions {
+    width?: number;
+    height?: number;
+    focus?: boolean;
+    bringToFront?: boolean;
+    prompt?: string;
+    stickTo?: "Right" | "Left" | "TopCenter";
+    x?: number;
+    y?: number;
+    keepInteraction?: boolean;
+}
+
 // Opens the app with the given options
-export async function openApp(options?: { width?: number, height?: number, focus?: boolean, bringToFront?: boolean, prompt?: string, stickTo?: "Right" | "Left" }) {
+export async function openApp(options?: OpenAppOptions) {
     const code = `await openApp(${JSON.stringify(options ?? {})});`;
     await codeExec(code);
 }
@@ -81,7 +93,7 @@ export async function addInteractionContent(text: string): Promise<void> {
     await codeExec(code);
 }
 
-// Gets the current screen data, buffer needs to be parsed with JSON.parse
+// Gets the current screen data, buffer
 export async function getActiveDisplay(): Promise<ScreenData> {
     const code = "return await getActiveDisplay();";
     const data = await codeExec(code);
@@ -96,7 +108,7 @@ export async function getWindows(filtered: string): Promise<ScreenData[]> {
     return screens as ScreenData[];
 }
 
-// Gets the current active window data, buffer needs to be parsed with JSON.parse
+// Gets the current active window data, buffer 
 export async function getActiveWindow(): Promise<ScreenData> {
     const code = "return await getActiveWindow();";
     const data = await codeExec(code);
@@ -150,7 +162,7 @@ export async function updateHeaderConent(html: string): Promise<void> {
 }
 
 export async function addContent(result: string): Promise<void> {
-    const code = `addContent(\`${stripChars(result)}\`);`;
+    const code = `addContent(\`${encodeContent(result)}\`, null, true);`;
     await codeExec(code);
 }
 
@@ -235,6 +247,16 @@ export async function pressEnter(): Promise<void> {
     await codeExec(code);
 }
 
+export async function moveMouseToImage(srcOrBase64: string): Promise<void> {
+    const code = `await moveMouseToImage(\`${srcOrBase64}\`);`;
+    await codeExec(code);
+}
+
+export async function clickImage(srcOrBase64: string): Promise<void> {
+    const code = `await clickImage(\`${srcOrBase64}\`);`;
+    await codeExec(code);
+}
+
 export async function clickText(text: string): Promise<void> {
     const code = `await clickText(\`${text}\`);`;
     await codeExec(code);
@@ -250,12 +272,23 @@ export async function pasteText(text: string): Promise<void> {
     await codeExec(code);
 }
 
+// mark areas on the screen
+export async function markAreas(areas: Area[]) {
+    const code = `await markAreas(${JSON.stringify(areas)});`;
+    await codeExec(code);
+}
+
+export async function clearAreas() {
+    const code = `await clearAreas();`;
+    await codeExec(code);
+}
+
 // define an area by dragging the mouse
-export async function markArea(): Promise<{
+export async function waitUntilMarked(): Promise<{
     fileBuffer: Buffer,
     captureRect: { x: number, y: number, width: number, height: number }
 }> {
-    const code = `return await markArea();`;
+    const code = `return await waitUntilMarked();`;
     const result = await codeExec(code);
     const buffer = Buffer.from(JSON.parse(result.fileBuffer));
     return { fileBuffer: buffer, captureRect: result.captureRect };
@@ -270,6 +303,22 @@ export async function getAreaBuffer(x: number, y: number, width: number, height:
 
 export async function openNewWindow(htmlOrFilePath: string, options?: BrowserWindowOptions): Promise<void> {
     const code = `await openBrowserWindow(\`${htmlOrFilePath}\`, ${JSON.stringify(options ?? {})});`;
+    await codeExec(code);
+}
+
+export async function displayContentAtPositions(contents: ContentPosition[], options = {
+    clickable: false,
+    additionalCss: ""
+    // function: () => { } // will be exec on start
+}): Promise<void> {
+    const contentStr = encodeContent(contents);
+    const optionsStr = encodeContent(options);
+    const code = `await displayContentAtPositions(\`${(contentStr)}\`, \`${optionsStr}\`);`;
+    await codeExec(code);
+}
+
+export async function clearContentAtPositions(): Promise<void> {
+    const code = `await clearContentAtPositions();`;
     await codeExec(code);
 }
 
@@ -291,6 +340,18 @@ export async function playAudio(urlOrArrayBufferStr: string, isArrayBuffer?: boo
 export async function openCameraStreamWindow(): Promise<void> {
     const code = `await openCameraStreamWindow();`;
     await codeExec(code);
+}
+
+function encodeContent(content: any): string {
+    if (!content) {
+        return "";
+    }
+
+    if (typeof content !== "string") {
+        content = JSON.stringify(content);
+    }
+
+    return encodeURIComponent(content);
 }
 
 // TODO encode properly
@@ -377,4 +438,22 @@ export interface DocumentMetaData {
     file_date: string;
     file_name: string;
     file_type: string
+}
+
+export interface Area {
+    startX: number;
+    startY: number;
+    width: number;
+    height: number;
+    classes?: string;
+    label?: string;
+    labelClasses?: string;
+}
+
+export interface ContentPosition {
+    x: number;
+    y: number;
+    html: string;
+    width?: number;
+    height?: number;
 }

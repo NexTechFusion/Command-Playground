@@ -1,6 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { addHeaderContent, openApp, pushContentStream, stopStream, waitForInput } from "../sdk/main";
-import { PromiseQueue } from "./utils/queue.utils";
+import { PromiseQueue } from "./common/queue.utils";
 const queue = new PromiseQueue(100); // take it easy 
 let pythonProcess: ChildProcessWithoutNullStreams;
 let stopTimeout: NodeJS.Timeout;

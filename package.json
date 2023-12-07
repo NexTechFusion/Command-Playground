@@ -8,6 +8,8 @@
     "mark-to-code": "nodemon ./src/mark-to-code.ts",
     "summarize-context": "nodemon ./src/summarize-context.ts",
     "open-interpreter": "nodemon ./src/open-interpreter.ts",
+    "track-objects": "nodemon ./src/track-objects.ts",
+    "test:lanceDB": "nodemon ./src/tests/lanceDB-test.ts",
     "build": "webpack"
   },
   "dependencies": {
@@ -17,6 +19,7 @@
     "@xenova/transformers": "^2.8.0"
   },
   "devDependencies": {
+    "dotenv": "^16.3.1",
     "@types/node": "^17.0.14",
     "langchain": "^0.0.186",
     "nodemon": "^2.0.15",
@@ -26,7 +29,13 @@
     "typescript": "^5.2.2",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
-    "readline": "^1.3.0"
+    "readline": "^1.3.0",
+    "@google-cloud/vision": "~4.0.2",
+    "tesseract.js": "^5.0.3",
+    "node-window-manager": "^2.2.4",
+    "sharp": "^0.33.0",
+    "screenshot-ftw": "^1.0.5",
+    "vectordb": "^0.3.9"
   },
   "author": "NexTechFusion",
   "license": "MIT"

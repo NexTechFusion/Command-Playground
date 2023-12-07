@@ -1,5 +1,5 @@
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import { stopStream, markArea, openApp, pushContentStream, startStream } from "../sdk/main";
+import { stopStream, waitUntilMarked, openApp, pushContentStream, startStream } from "../sdk/main";
 import { ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";
 import { HumanMessage, SystemMessage } from "langchain/schema";
 import { StringOutputParser } from "langchain/schema/output_parser";
@@ -29,7 +29,7 @@ async function image2textOpenAi(imageBase64: string) {
     return result;
 }
 async function main() {
-    const result = await markArea();
+    const result = await waitUntilMarked();
 
     await openApp({
         height: 364,

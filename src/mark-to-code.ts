@@ -1,9 +1,9 @@
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import { stopStream, markArea, openApp, pushContentStream, addHeaderContent, addContent, openNewWindow } from "../sdk/main";
+import { stopStream, waitUntilMarked, openApp, pushContentStream, addHeaderContent, addContent, openNewWindow } from "../sdk/main";
 import { ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";
 import { HumanMessage, SystemMessage } from "langchain/schema";
 import { StringOutputParser } from "langchain/schema/output_parser";
-import { extractCode } from "./utils/markdown-extract";
+import { extractCode } from "./common/extract-code-on-md";
 const PROMPT_ANALYZER = `
 You are an expert Tailwind developer
 You take screenshots of a reference web page from the user, and then build single page apps 
@@ -30,7 +30,7 @@ Return only the full code in <html></html> tags.
 //https://github.com/abi/screenshot-to-code inspired by this
 
 async function main() {
-    const result = await markArea();
+    const result = await waitUntilMarked();
 
     await openApp({
         height: 800,

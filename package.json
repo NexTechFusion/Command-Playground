@@ -9,6 +9,7 @@
     "summarize-context": "nodemon ./src/summarize-context.ts",
     "open-interpreter": "nodemon ./src/open-interpreter.ts",
     "track-objects": "nodemon ./src/track-objects.ts",
+    "screen-img-search": "nodemon ./src/screen-image-search.ts",
     "test:lanceDB": "nodemon ./src/tests/lanceDB-test.ts",
     "build": "webpack"
   },

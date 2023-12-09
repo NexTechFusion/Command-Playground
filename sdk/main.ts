@@ -112,6 +112,9 @@ export async function getWindows(filtered: string): Promise<ScreenData[]> {
 export async function getActiveWindow(): Promise<ScreenData> {
     const code = "return await getActiveWindow();";
     const data = await codeExec(code);
+
+    if (!data) return null;
+
     const buffer = Buffer.from(JSON.parse(data.fileBuffer));
     return { ...data, fileBuffer: buffer } as ScreenData;
 }

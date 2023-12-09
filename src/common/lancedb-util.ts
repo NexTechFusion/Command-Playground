@@ -1,5 +1,6 @@
-import { OpenAIEmbeddingFunction, connect, } from 'vectordb';
-const dbPath = 'db'
+import { MetricType, OpenAIEmbeddingFunction, connect, } from 'vectordb';
+import { initTransformers, pipeline } from './transformerjs-wrapper';
+const dbPath = 'lancedb'
 let embedFunction;
 
 export interface IngestOptions {
@@ -13,6 +14,7 @@ export interface RetriveOptions {
     limit?: number;
     filter?: string;
     select?: Array<string>;
+    metricType?: MetricType;
 }
 
 export interface DeleteOptions {
@@ -24,10 +26,12 @@ export interface UpdateOptions {
     table: string;
     data: Record<string, unknown>[]
 }
+export function setEmbeddingFn(fn) {
+    embedFunction = fn;
+}
 
 export async function useLocalEmbedding() {
-    const TransformersApi = Function('return import("@xenova/transformers")')();
-    const { pipeline } = await TransformersApi;
+    await initTransformers();
     const pipe = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
 
     const embed_fun: any = {};
@@ -54,9 +58,13 @@ export async function update(options: UpdateOptions) {
 
         if ((await db.tableNames()).includes(options.table)) {
             const tbl = await db.openTable(options.table, embedFunction)
-            await tbl.overwrite(options.data)
+
+            const toRemove = options.data.map(o => `'${o.id}'`).join(", ");
+            await tbl.delete("id IN (" + toRemove + ")");
+
+            await tbl.add(options.data)
         } else {
-            return new Error("Table does not exist")
+            await db.createTable(options.table, options.data, embedFunction)
         }
     } catch (e) {
         console.error(e);
@@ -96,7 +104,7 @@ export async function ingest(options: IngestOptions) {
     }
 }
 
-export async function retrive(options: RetriveOptions) {
+export async function retrive<T>(options: RetriveOptions) {
     try {
         const db = await connect(dbPath)
 
@@ -112,12 +120,15 @@ export async function retrive(options: RetriveOptions) {
                 build.select(options.select)
             }
 
+            if (options.metricType) {
+                build.metricType(options.metricType)
+            }
+
             if (options.limit) {
                 build.limit(options.limit)
             }
-
             const results = await build.execute();
-            return results;
+            return results as T[];
         } else {
             return new Error("Table does not exist")
         }

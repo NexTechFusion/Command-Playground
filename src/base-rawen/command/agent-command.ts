@@ -1,4 +1,4 @@
-import { addResult, pushContentStream, pushLog, stopStream } from "../../../sdk/main"
+import { addResult, pushContentStream, pushLog, endStream } from "../../../sdk/main"
 import { BaseAgent } from "../base-rawen-agent";
 import { OpenAI } from "langchain/llms/openai";
 import { PromiseQueue } from "../../common/queue.utils";
@@ -17,12 +17,12 @@ export async function main() {
         }, (chunk) => {
             queue.add(pushLog, chunk)
         });
-        queue.add(stopStream);
+        queue.add(endStream);
     } catch (err) {
         console.log(err);
         queue.add(addResult, err.message);
     } finally {
-        queue.add(stopStream);
+        queue.add(endStream);
         await queue.waitUntilAllDone();
     }
 }

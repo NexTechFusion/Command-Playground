@@ -218,7 +218,7 @@ export async function pushContentStream(token: string): Promise<void> {
     await codeExec(code);
 }
 
-export async function stopStream(): Promise<void> {
+export async function endStream(): Promise<void> {
     const code = `endStream();`;
     await codeExec(code);
 }

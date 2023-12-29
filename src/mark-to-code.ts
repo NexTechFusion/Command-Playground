@@ -1,5 +1,5 @@
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import { stopStream, waitUntilMarked, openApp, pushContentStream, addPrompt, addResult, openNewWindow } from "../sdk/main";
+import { endStream, waitUntilMarked, openApp, pushContentStream, addPrompt, addResult, openNewWindow } from "../sdk/main";
 import { ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";
 import { HumanMessage, SystemMessage } from "langchain/schema";
 import { StringOutputParser } from "langchain/schema/output_parser";
@@ -48,7 +48,7 @@ async function main() {
         code += chunk;
         await pushContentStream(chunk);
     }
-    await stopStream();
+    await endStream();
 
     const parse = extractCode(code);
     await openNewWindow(parse, {

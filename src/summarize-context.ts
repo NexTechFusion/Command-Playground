@@ -1,7 +1,7 @@
 import { OpenAI } from "langchain/llms/openai";
 import { loadSummarizationChain } from "langchain/chains";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { addPrompt, getWindowText, openApp, pushContentStream, waitForConfirm, pushLog, stopStream } from "../sdk/main";
+import { addPrompt, getWindowText, openApp, pushContentStream, waitForConfirm, pushLog, endStream } from "../sdk/main";
 
 async function summarize() {
     const text = await getWindowText();
@@ -13,7 +13,7 @@ async function summarize() {
 
     if (!text) {
         await pushContentStream("No text to summarize");
-        await stopStream();
+        await endStream();
         return;
     }
 
@@ -45,7 +45,7 @@ async function summarize() {
         await pushContentStream(chunk.text);
     }
 
-    await stopStream();
+    await endStream();
 }
 
 

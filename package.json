@@ -12,7 +12,6 @@
     "screen-img-search": "nodemon ./src/screen-image-search.ts",
     "base-rawen-agent": "nodemon ./src/base-rawen-agent.ts",
     "test:lanceDB": "nodemon ./src/tests/lanceDB-test.ts",
-    "test": "nodemon ./src/test.ts",
     "build": "webpack"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { addPrompt, openApp, pushContentStream, stopStream, waitForInput } from "../sdk/main";
+import { addPrompt, openApp, pushContentStream, endStream, waitForInput } from "../sdk/main";
 import { PromiseQueue } from "./common/queue.utils";
 const queue = new PromiseQueue(100); // take it easy 
 let pythonProcess: ChildProcessWithoutNullStreams;
@@ -59,7 +59,7 @@ async function proceedWithInput() {
 }
 
 async function stop(msg) {
-    debounce(stopStream);
+    debounce(endStream);
 
     // lazy check better prompt via stop Sequence
     if (msg.includes("?")) {

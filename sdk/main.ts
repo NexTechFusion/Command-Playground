@@ -269,7 +269,7 @@ export async function getActiveWindowTitle(): Promise<string> {
 }
 
 export async function getCursorPosition(): Promise<CursorPosition> {
-    const code = `return await cursorPosition();`;
+    const code = `return await getCursorPosition();`;
     const cursorPos = await codeExec(code);
     return cursorPos;
 }

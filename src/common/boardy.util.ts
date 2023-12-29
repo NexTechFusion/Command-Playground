@@ -1,19 +1,20 @@
 import { displayContentAtPositions } from "../../sdk/main";
-const contentHeight = 200;
-const contentWidth = 200;
+const contentHeight = 300;
+const contentWidth = 300;
 
-export async function boardySays(message: string, x: number, y: number) {
+export async function boardySays(message: string, x: number, y: number, width: number = contentWidth, height: number = contentHeight) {
     await displayContentAtPositions([{
         x,
         y,
-        width: contentHeight,
-        height: contentWidth,
+        width,
+        height,
         html: buildBoardy(message)
     }]);
 }
 
 function buildBoardy(message: string) {
-    const boardySrc = "C:\\repos\\Command-Playground\\boardy.png";
+    const boardySrc = __dirname + "\\rawen.png";
+    console.log("boardySrc", boardySrc);
     return `
     <div class="p-2 bg-white rounded-md shadow-md">
     ${message}

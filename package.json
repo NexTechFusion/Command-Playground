@@ -10,6 +10,7 @@
     "open-interpreter": "nodemon ./src/open-interpreter.ts",
     "track-objects": "nodemon ./src/track-objects.ts",
     "screen-img-search": "nodemon ./src/screen-image-search.ts",
+    "live-chart-prediction": "nodemon ./src/live-chart-analysis.ts",
     "base-rawen-agent": "nodemon ./src/base-rawen-agent.ts",
     "test:lanceDB": "nodemon ./src/tests/lanceDB-test.ts",
     "build": "webpack"

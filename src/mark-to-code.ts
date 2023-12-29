@@ -1,5 +1,5 @@
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import { stopStream, waitUntilMarked, openApp, pushContentStream, addHeaderContent, addContent, openNewWindow } from "../sdk/main";
+import { stopStream, waitUntilMarked, openApp, pushContentStream, addPrompt, addResult, openNewWindow } from "../sdk/main";
 import { ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";
 import { HumanMessage, SystemMessage } from "langchain/schema";
 import { StringOutputParser } from "langchain/schema/output_parser";
@@ -36,11 +36,11 @@ async function main() {
         height: 800,
         width: 1024,
     });
-    await addHeaderContent("Analyzing image...");
+    await addPrompt("Analyzing image...");
     const imageBase64 = "data:image/png;base64," + result.fileBuffer.toString("base64");
-    await addContent("<img width='256' src='" + imageBase64 + "' /> <br>");
+    await addResult("<img width='256' src='" + imageBase64 + "' /> <br>");
 
-    await addHeaderContent("Generating code...");
+    await addPrompt("Generating code...");
     const stream = await image2textOpenAi(imageBase64);
 
     let code = "";

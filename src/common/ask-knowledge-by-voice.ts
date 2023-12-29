@@ -1,4 +1,4 @@
-import { addContent, addHeaderContent, addInteractionContent, getDocsBySimilarity, getInteractionState, pushContentStream, startAudioRecording, stopStream, } from "../../sdk/main";
+import { addResult, addPrompt, addInteractionContent, getDocsBySimilarity, getInteractionState, pushContentStream, startAudioRecording, stopStream, } from "../../sdk/main";
 import OpenAI, { toFile } from "openai";
 import { RunnableSequence } from "langchain/schema/runnable";
 import { PromptTemplate } from "langchain/prompts";
@@ -10,9 +10,9 @@ async function main() {
     
     if (buffer && buffer.byteLength > 5000) {
         const text = await transcribe(buffer);
-        await addHeaderContent("Question : " + text);
+        await addPrompt("Question : " + text);
         const result = await askKnowledge(text);
-        await addContent(result);
+        await addResult(result);
     }
 
     // main();

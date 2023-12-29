@@ -9,7 +9,7 @@ export class PromiseQueue {
         this.delay = delay ?? 2000;
     }
 
-    async callFunction(fn, ...args) {
+    async add(fn, ...args) {
         if (!this.promiseInProgress) {
             this.promiseInProgress = true;
             try {
@@ -39,5 +39,16 @@ export class PromiseQueue {
         } else {
             this.promiseInProgress = false;
         }
+    }
+
+    waitUntilAllDone() {
+        return new Promise((resolve, reject) => {
+            const interval = setInterval(() => {
+                if (!this.promiseInProgress && this.queue.length === 0) {
+                    clearInterval(interval);
+                    resolve(true);
+                }
+            }, 100);
+        });
     }
 }

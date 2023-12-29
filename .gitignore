@@ -5,3 +5,4 @@ dist
 db
 *.png
 google-key.json
+lancedb

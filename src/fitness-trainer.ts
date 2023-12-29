@@ -1,4 +1,4 @@
-import { addHeaderContent, getWindows, openCameraStreamWindow, playAudio, pushContentStream } from "../sdk/main";
+import { addPrompt, getWindows, openCameraStreamWindow, playAudio, pushContentStream } from "../sdk/main";
 import { text2speech } from "./common/coqui_text-to-speech-api";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { AIMessage, HumanMessage, SystemMessage } from "langchain/schema";
@@ -42,7 +42,7 @@ async function main() {
 
 let interation = 0;
 async function startInstructor() {
-    await addHeaderContent("Workout iteration - " + interation);
+    await addPrompt("Workout iteration - " + interation);
     const cameraScreen = await recurringUntilVideoStarted();
     const imageBase64 = `data:image/png;base64,${cameraScreen.fileBuffer.toString("base64")}`;
 

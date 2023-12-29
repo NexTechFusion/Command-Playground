@@ -31,7 +31,7 @@ export async function getUiElementsRoboflow(src: string): Promise<RoboflowRespon
     });
 
     const apiUrl = "https://detect.roboflow.com/ui-components-detection/2";
-    const apiKey = "hz2d7T8X6TlLawI3rlYW";
+    const apiKey = "";
 
     try {
         const response = await fetch(`${apiUrl}?api_key=${apiKey}`, {

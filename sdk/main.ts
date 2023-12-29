@@ -1,15 +1,16 @@
 const key = "test";
-const serverUrl = "http://localhost:3440/execute";
+const clientUrl = "http://localhost:3440/execute";
+const serverUrl = "http://localhost:3400/api";
 
 async function codeExec(code: string, retryCount = 0): Promise<any> {
     try {
         const req: ExternalCodeRequest = { code, key };
-        const response = await fetch(serverUrl, {
+        const response = await fetch(clientUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(req),
+            body: JSON.stringify(req)
         });
 
         if (!response.ok) {
@@ -25,6 +26,28 @@ async function codeExec(code: string, retryCount = 0): Promise<any> {
             throw new Error(e);
         }
         return codeExec(code, retryCount);
+    }
+}
+
+async function codeExecSSR(req: {}, route = "code/exec"): Promise<any> {
+    try {
+        const response = await fetch(`${serverUrl}/${route}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(req)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.result;
+    } catch (e) {
+        console.log(e);
+        throw new Error(e);
     }
 }
 
@@ -52,8 +75,8 @@ export async function getAllDocs(): Promise<DocumentData[]> {
     return docs;
 }
 
-export async function getDocsBySimilarity(text: string, topK: number = 2): Promise<DocumentData[]> {
-    const code = `return await getDocsBySimilarity(\`${stripChars(text)}\`, ${topK});`;
+export async function getDocsBySimilarity(text: string, topK: number = 2, options: VectorCallOptions = {}): Promise<DocumentData[]> {
+    const code = `return await getDocsBySimilarity(\`${stripChars(text)}\`, ${topK}, ${JSON.stringify(options)});`;
     const docs = await codeExec(code);
     return docs;
 }
@@ -119,6 +142,22 @@ export async function getActiveWindow(): Promise<ScreenData> {
     return { ...data, fileBuffer: buffer } as ScreenData;
 }
 
+export async function getLatestWindows(): Promise<any[]> {
+    const code = "return await getLatestWindows();";
+    const data = await codeExec(code);;
+    return data;
+}
+
+export async function openLastWindow(click = false): Promise<void> {
+    const code = `await openLastWindow(${click});`;
+    await codeExec(code);
+}
+
+export async function openWindow(id, click = false): Promise<void> {
+    const code = `await openWindow(${id},${click});`;
+    await codeExec(code);
+}
+
 // Sets the current interaction prompt
 export async function setInput(text: string): Promise<void> {
     const code = `await setInput(\`${text}\`);`;
@@ -154,28 +193,28 @@ export async function executeCommand<T>(input: string, cmdId: string): Promise<T
     return await codeExec(code);
 }
 
-export async function addHeaderContent(html: string): Promise<void> {
-    const code = `addHeaderContent(\`${stripChars(html)}\`);`;
+export async function addPrompt(html: string): Promise<void> {
+    const code = `addPrompt(\`${encodeContent(html)}\`, true);`;
     await codeExec(code);
 }
 
-export async function updateHeaderConent(html: string): Promise<void> {
-    const code = `updateHeaderConent(\`${stripChars(html)}\`);`;
+export async function updatePrompt(html: string): Promise<void> {
+    const code = `updatePrompt(\`${encodeContent(html)}\`, true);`;
     await codeExec(code);
 }
 
-export async function addContent(result: string): Promise<void> {
-    const code = `addContent(\`${encodeContent(result)}\`, null, true);`;
+export async function addResult(result: string): Promise<void> {
+    const code = `addResult(\`${encodeContent(result)}\`, null, true);`;
     await codeExec(code);
 }
 
 export async function pushLog(log: string): Promise<void> {
-    const code = `pushLog(\`${stripChars(log)}\`);`;
+    const code = `pushLog(\`${encodeContent(log)}\`, true);`;
     await codeExec(code);
 }
 
 export async function pushContentStream(token: string): Promise<void> {
-    const code = `pushContentStream(\`${stripChars(token)}\`);`;
+    const code = `pushContentStream(\`${encodeContent(token)}\`);`;
     await codeExec(code);
 }
 
@@ -345,6 +384,29 @@ export async function openCameraStreamWindow(): Promise<void> {
     await codeExec(code);
 }
 
+export async function extractWebsiteContent(url: string, maxDepth: number = 1): Promise<{ url: string, content: string }[]> {
+    const code = `return await extractWebsiteContent(\`${url}\`, ${maxDepth}, true);`;
+    const contents = await codeExecSSR({ code });
+    return JSON.parse(contents);
+}
+
+export async function extractYoutubeContent(url: string): Promise<TranscriptResponse[]> {
+    const code = `return await extractYoutubeContent(\`${url}\`, true);`;
+    const contents = await codeExec(code);
+    return JSON.parse(contents);
+}
+
+export async function webResearch(query: string): Promise<{ url: string, content: string, title: string }[]> {
+    const code = `return await webResearch(\`${query}\`, true);`;
+    const contents = await codeExecSSR({ code });
+    return contents ? JSON.parse(contents) : [];
+}
+
+export async function getEmbedding(texts: string[], model?: string): Promise<any> {
+    const contents = await codeExecSSR({ texts, model }, "vector/embedding");
+    return contents;
+}
+
 function encodeContent(content: any): string {
     if (!content) {
         return "";
@@ -354,7 +416,7 @@ function encodeContent(content: any): string {
         content = JSON.stringify(content);
     }
 
-    return encodeURIComponent(content);
+    return encodeURI(content);
 }
 
 // TODO encode properly
@@ -368,6 +430,12 @@ function stripChars(text): string {
     }
 
     return text.replace(/`/g, '\\`')
+}
+
+export interface TranscriptResponse {
+    text: string;
+    duration: number;
+    offset: number;
 }
 
 export interface ExternalCodeRequest {
@@ -410,6 +478,8 @@ export interface LlmResultModel {
 export interface CommandModel {
     id: string;
     name: string;
+    isTool?: boolean;
+    description?: string;
 }
 export interface KeyValueSetting {
     id: string | DefaultKeys;
@@ -438,9 +508,15 @@ export interface DocumentData {
 }
 
 export interface DocumentMetaData {
-    file_date: string;
-    file_name: string;
-    file_type: string
+    id: string;
+    date: string;
+    tags: string;
+    file_path: string;
+    file_total_pages: number;
+    file_page_number: number;
+    file_page_lines_from: number;
+    file_page_lines_to: number;
+    keywords: string;
 }
 
 export interface Area {
@@ -459,4 +535,8 @@ export interface ContentPosition {
     html: string;
     width?: number;
     height?: number;
+}
+
+export interface VectorCallOptions {
+    tags?: string;
 }

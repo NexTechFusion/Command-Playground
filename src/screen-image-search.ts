@@ -1,12 +1,10 @@
 import sharp = require("sharp");
-import { clearAreas, clearContentAtPositions, getActiveWindow, markAreas } from "../sdk/main";
+import { clearContentAtPositions, markAreas } from "../sdk/main";
 import { getObjectsTransformers } from "./common/object-detection";
-import * as fs from "fs";
 import { windowManager } from "node-window-manager";
 import { ingestImages, retriveImages } from "./common/image-store";
 import { boardySays } from "./common/boardy.util";
-
-const display = windowManager.getPrimaryMonitor();
+import { getActiveWinowBuffer, getPartOfImage } from "./common/window-utils";
 
 async function main() {
     await ingestImages([{
@@ -27,8 +25,7 @@ async function main() {
 async function scan() {
     console.log("scanning...");
 
-    const bounds = getRealBounds();
-    const activeWinFileBuffer = await getCalculatedActiveWinowBuffer(bounds);
+    const activeWinFileBuffer = await getActiveWinowBuffer();
     if (!activeWinFileBuffer) { scan(); return };
 
     const objects = await getDetectedObjects();
@@ -51,32 +48,7 @@ async function scan() {
     scan();
 }
 
-function getRealBounds() {
-    const window = windowManager.getActiveWindow();
-    const bounds = window.getBounds();
-    const display = windowManager.getPrimaryMonitor();
-    const scaleFactor = display.getScaleFactor();
-    const realBounds = {
-        x: bounds.x * scaleFactor,
-        y: bounds.y * scaleFactor,
-        width: bounds.width * scaleFactor,
-        height: bounds.height * scaleFactor
-    };
-    return realBounds;
-}
-
-async function getCalculatedActiveWinowBuffer(bounds) {
-    const activeWin = await getActiveWindow();
-    if (!activeWin?.fileBuffer) return null;
-
-    await sharp(activeWin.fileBuffer) // Temporarily workaround
-        .resize(bounds.width, bounds.height).toFile("tmp.png");
-
-    return fs.readFileSync("tmp.png");
-}
-
 async function getDetectedObjects(startX: number = 0, startY: number = 0) {
-
     const result = await getObjectsTransformers("tmp.png");
     const actualAAreas = result.map(o => ({
         startX: o.box.xmin + startX,
@@ -90,18 +62,5 @@ async function getDetectedObjects(startX: number = 0, startY: number = 0) {
 
     return actualAAreas;
 }
-
-async function getPartOfImage(fromBuffer: Buffer, startX: number, startY: number, width: number, height: number) {
-    startX = startX < 0 ? 0 : startX;
-    startY = startY < 0 ? 0 : startY;
-
-    const buffer = await sharp(fromBuffer)
-        .extract({ left: startX, top: startY, width, height })
-        .toBuffer()
-    return buffer;
-}
-
-
-
 
 main();

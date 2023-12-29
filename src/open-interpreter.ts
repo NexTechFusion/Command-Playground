@@ -1,5 +1,5 @@
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { addHeaderContent, openApp, pushContentStream, stopStream, waitForInput } from "../sdk/main";
+import { addPrompt, openApp, pushContentStream, stopStream, waitForInput } from "../sdk/main";
 import { PromiseQueue } from "./common/queue.utils";
 const queue = new PromiseQueue(100); // take it easy 
 let pythonProcess: ChildProcessWithoutNullStreams;
@@ -15,7 +15,7 @@ async function main() {
         stickTo: "Right",
         width: 400,
     });
-    await addHeaderContent("Open-Interpreter :" + question);
+    await addPrompt("Open-Interpreter :" + question);
     pythonProcess = spawn('python', [py_path, api_key, `"${question}"`], {
         shell: true
     });
@@ -54,7 +54,7 @@ function cleanString(str) {
 
 async function proceedWithInput() {
     const input = await waitForInput();
-    await addHeaderContent(`> ${input}`);
+    await addPrompt(`> ${input}`);
     pythonProcess.stdin.write(input + '\n');
 }
 
@@ -69,7 +69,7 @@ async function stop(msg) {
 }
 
 function debounce(func: any, args?: any) {
-    queue.callFunction(func, args);
+    queue.add(func, args);
 }
 
 main();

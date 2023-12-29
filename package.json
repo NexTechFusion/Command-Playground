@@ -10,7 +10,9 @@
     "open-interpreter": "nodemon ./src/open-interpreter.ts",
     "track-objects": "nodemon ./src/track-objects.ts",
     "screen-img-search": "nodemon ./src/screen-image-search.ts",
+    "base-rawen-agent": "nodemon ./src/base-rawen-agent.ts",
     "test:lanceDB": "nodemon ./src/tests/lanceDB-test.ts",
+    "test": "nodemon ./src/test.ts",
     "build": "webpack"
   },
   "dependencies": {
@@ -36,7 +38,8 @@
     "node-window-manager": "^2.2.4",
     "sharp": "^0.33.0",
     "screenshot-ftw": "^1.0.5",
-    "vectordb": "^0.3.9"
+    "vectordb": "^0.3.9",
+    "@langchain/community": "^0.0.8"
   },
   "author": "NexTechFusion",
   "license": "MIT"

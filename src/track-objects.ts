@@ -14,7 +14,7 @@ async function main() {
 
     for (const element of elements) {
         try {
-            await boardySays(`Tell me a bit about this ${element.label}`, element.startX + element.width, element.startY);
+            await boardySays(`Tell me a bit about this ${element.label}`, element.x + element.width, element.y);
             await markAreas([element]);
             openApp({
                 bringToFront: true,
@@ -26,7 +26,7 @@ async function main() {
             const input = await waitForInput();
             await addPrompt(`${element.label} = ${input}`);
 
-            const partBuffer = await getPartOfImage(activeWinFileBuffer, element.startX, element.startY, element.width, element.height);
+            const partBuffer = await getPartOfImage(activeWinFileBuffer, element.x, element.y, element.width, element.height);
             const imageBase64 = `data:image/png;base64,${partBuffer.toString("base64")}`;
             await addResult(`<img src='${imageBase64}' />`);
             await clickImage("public/matchers/needle.png");
@@ -50,8 +50,8 @@ async function findAndMarkElements(startX: number = 0, startY: number = 0) {
 
     const result = await getObjectsTransformers("tmp.png");
     const actualAAreas = result.map(o => ({
-        startX: o.box.xmin + startX,
-        startY: o.box.ymin + startY,
+        x: o.box.xmin + startX,
+        y: o.box.ymin + startY,
         width: o.box.xmax - o.box.xmin,
         height: o.box.ymax - o.box.ymin,
         classes: "rounded-md border-violet-500",

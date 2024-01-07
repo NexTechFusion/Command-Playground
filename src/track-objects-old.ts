@@ -33,8 +33,8 @@ async function main() {
         height: bounds.height * scaleFactor
     };
     await markAreas([{
-        startX: realBounds.x,
-        startY: realBounds.y,
+        x: realBounds.x,
+        y: realBounds.y,
         width: realBounds.width,
         height: realBounds.height,
         classes: "rounded-md border-violet-500",
@@ -47,8 +47,8 @@ async function main() {
     const result = await getObjectsTransformers("tmp.png");
     console.log(result);
     const actualAAreas = result.map(o => ({
-        startX: o.box.xmin + realBounds.x,
-        startY: o.box.ymin + realBounds.y,
+        x: o.box.xmin + realBounds.x,
+        y: o.box.ymin + realBounds.y,
         width: o.box.xmax - o.box.xmin,
         height: o.box.ymax - o.box.ymin,
         classes: "rounded-md border-violet-500",

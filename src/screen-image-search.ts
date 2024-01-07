@@ -32,11 +32,11 @@ async function scan() {
 
     for (const object of objects) {
         try {
-            const partBuffer = await getPartOfImage(activeWinFileBuffer, object.startX, object.startY, object.width, object.height);
+            const partBuffer = await getPartOfImage(activeWinFileBuffer, object.x, object.y, object.width, object.height);
             const res = await retriveImages(partBuffer, 1);
             if (res.length > 0) {
                 const match = res[0];
-                await boardySays("Found at my knowledge : " + match.text, object.startX + object.width, object.startY);
+                await boardySays("Found at my knowledge : " + match.text, object.x + object.width, object.y);
                 await markAreas([object]);
                 return;
             }
@@ -51,8 +51,8 @@ async function scan() {
 async function getDetectedObjects(startX: number = 0, startY: number = 0) {
     const result = await getObjectsTransformers("tmp.png");
     const actualAAreas = result.map(o => ({
-        startX: o.box.xmin + startX,
-        startY: o.box.ymin + startY,
+        x: o.box.xmin + startX,
+        y: o.box.ymin + startY,
         width: o.box.xmax - o.box.xmin,
         height: o.box.ymax - o.box.ymin,
         classes: "rounded-md border-violet-500",

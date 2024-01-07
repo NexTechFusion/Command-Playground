@@ -13,7 +13,6 @@ export class BaseAppOpener {
 
 
 
-                resolve(image_url);
             } catch (err) {
                 reject(err);
             }

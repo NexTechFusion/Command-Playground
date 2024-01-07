@@ -1,5 +1,5 @@
 import { OpenAI } from "langchain/llms/openai";
-import { addResult, addPrompt, extractWebsiteContent, extractYoutubeContent, getEmbedding, pushContentStream, pushLog, endStream, waitForInput, webResearch } from "../sdk/main";
+import { addResult, addPrompt, extractWebsiteContent, extractYoutubeContent, getEmbedding, pushContentStream, pushLog, endStream, waitForInput, webResearch, ingesImages, getImagesBySimilarity, waitForConfirm, waitUntilMarked, extractTextFromImage, moveMouseTo, displayContentAtPositions } from "../sdk/main";
 import { BaseAnswer } from "./base-rawen/base-answer";
 import { PromiseQueue } from "./common/queue.utils";
 import { BaseSummarize } from "./base-rawen/base-summarize";
@@ -11,9 +11,12 @@ import { PromptTemplate } from "langchain/prompts";
 import { BaseWebsearch } from "./base-rawen/base-websearch";
 import { BaseKnowledgeQA } from "./base-rawen/base-knowledge-qa";
 import { BaseAgent } from "./base-rawen/base-rawen-agent";
+import { clusterWords } from "./common/screen-to-boundings";
+import { refaceImage } from "./common/stability-ai";
+import { boardySays } from "./common/boardy.util";
 
 const queue = new PromiseQueue(10);
-const openAIApiKey = "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";
+const openAIApiKey = "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";
 const togetheraiKey = "143499f858f0cf9d9ccda6c8492385e2e9676cd441daf19e312c0e91bc166348";
 
 const llm = new OpenAI({
@@ -38,8 +41,35 @@ const chatModel = new ChatOpenAI({
 });
 
 async function main() {
-    const res = await getEmbedding(["Hello World", "Hellowerwer World34"], "Xenova/all-MiniLM-L6-v2");
-    console.log(res);
+
+    const img = "C:/repos/Command-Playground/imgs/bieber.png"
+    // await ingesImages([img]);
+
+    const element = await waitUntilMarked();
+
+    await boardySays("I'm analyzing the image...");
+    const newImg = await refaceImage(element.fileBuffer, element.captureRect.width, element.captureRect.height);
+    const x = element.captureRect.x;
+    const y = element.captureRect.y;
+    const width = element.captureRect.width;
+    const height = element.captureRect.height;
+
+    await displayContentAtPositions([{
+        x,
+        y,
+        width,
+        height,
+        html: `<img style="width:100%" src="data:image/png;base64,${newImg.toString("base64")}" />`
+    }]);
+
+    // const text = await extractTextFromImage(element.fileBuffer);
+    // const res = clusterWords(text.words);
+    // const text2 = await new BaseVision(chatModel).call(element.fileBuffer, "What do you see ? In 1 sentence!");
+
+    // console.log(text);
+
+    // const res = await getEmbedding(["Hello World", "Hellowerwer World34"], "Xenova/all-MiniLM-L6-v2");
+    // console.log(res);
     // const prompt = await waitForInput();
     // await addPrompt(prompt);
 

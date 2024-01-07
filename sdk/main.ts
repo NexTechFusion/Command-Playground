@@ -29,7 +29,7 @@ async function codeExec(code: string, retryCount = 0): Promise<any> {
     }
 }
 
-async function codeExecSSR(req: {}, route = "code/exec"): Promise<any> {
+async function execSSR(req: {}, route = "code/exec"): Promise<any> {
     try {
         const response = await fetch(`${serverUrl}/${route}`, {
             method: 'POST',
@@ -75,16 +75,27 @@ export async function getAllDocs(): Promise<DocumentData[]> {
     return docs;
 }
 
-export async function getDocsBySimilarity(text: string, topK: number = 2, options: VectorCallOptions = {}): Promise<DocumentData[]> {
+export async function getDocsBySimilarity(text: string, topK: number = 2, options: TextVectorCallOptions = {}): Promise<DocumentData[]> {
     const code = `return await getDocsBySimilarity(\`${stripChars(text)}\`, ${topK}, ${JSON.stringify(options)});`;
     const docs = await codeExec(code);
     return docs;
 }
 
 // Saves the text to the instance knowledge base
-export async function ingestText(text: string, metadata?: any): Promise<void> {
-    const code = `await ingestText(\`${text}\`, ${JSON.stringify(metadata ?? {})});`;
+export async function ingestText(text: string, settings?: TextIngestSettings): Promise<void> {
+    const code = `await ingestText(\`${text}\`, ${JSON.stringify(settings ?? {})});`;
     await codeExec(code);
+}
+// Saves images to achive mulitmodal search
+export async function ingesImages(images: string[], settings?: ImageIngestSettings, table?: string): Promise<void> {
+    const code = `await ingestImages(${JSON.stringify(images)}, ${JSON.stringify(settings ?? {})}, "${table}");`;
+    await codeExec(code);
+}
+
+export async function getImagesBySimilarity(text: string, topK: number = 2, options: TextVectorCallOptions = {}, table?: string): Promise<DocumentData[]> {
+    const code = `return await getImagesBySimilarity(\`${stripChars(text)}\`, ${topK}, ${JSON.stringify(options)}, "${table}");`;
+    const docs = await codeExec(code);
+    return docs;
 }
 
 // TODO
@@ -343,6 +354,32 @@ export async function getAreaBuffer(x: number, y: number, width: number, height:
     return buffer;
 }
 
+export function toBase64(buffer: Buffer, ext = "png"): string {
+    return `data:image/${ext};base64,${buffer.toString("base64")}`;
+}
+
+export function toBuffer(base64: string): Buffer {
+    return Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+}
+
+export async function resizeImage(base64OrBuffer: string | Buffer, width: number, height: number, asBuffer = true): Promise<Buffer> {
+    let base64 = base64OrBuffer;
+    const isBuffer = typeof base64OrBuffer !== "string";
+
+    if (isBuffer) {
+        base64 = toBase64(base64OrBuffer);
+    }
+
+    const code = `return await resizeImage(\`${base64}\`, ${width}, ${height});`;
+    let result = await codeExec(code);
+
+    if (isBuffer && asBuffer) {
+        result = toBuffer(result);
+    }
+
+    return result;
+}
+
 export async function openNewWindow(htmlOrFilePath: string, options?: BrowserWindowOptions): Promise<void> {
     const code = `await openBrowserWindow(\`${htmlOrFilePath}\`, ${JSON.stringify(options ?? {})});`;
     await codeExec(code);
@@ -386,7 +423,13 @@ export async function openCameraStreamWindow(): Promise<void> {
 
 export async function extractWebsiteContent(url: string, maxDepth: number = 1): Promise<{ url: string, content: string }[]> {
     const code = `return await extractWebsiteContent(\`${url}\`, ${maxDepth}, true);`;
-    const contents = await codeExecSSR({ code });
+    const contents = await execSSR({ code });
+    return JSON.parse(contents);
+}
+
+export async function extractTextFromImage(imgBuffer: Buffer, lang = "eng"): Promise<{ text: string, words: { text: string, bbox: { x0, y0, x1, y1 } }[] }> {
+    const code = `return await extractTextFromImage(\`${imgBuffer.toString("base64")}\`, \`${lang}\`, true);`;
+    const contents = await execSSR({ code });
     return JSON.parse(contents);
 }
 
@@ -398,12 +441,12 @@ export async function extractYoutubeContent(url: string): Promise<TranscriptResp
 
 export async function webResearch(query: string): Promise<{ url: string, content: string, title: string }[]> {
     const code = `return await webResearch(\`${query}\`, true);`;
-    const contents = await codeExecSSR({ code });
+    const contents = await execSSR({ code });
     return contents ? JSON.parse(contents) : [];
 }
 
 export async function getEmbedding(texts: string[], model?: string): Promise<any> {
-    const contents = await codeExecSSR({ texts, model }, "vector/embedding");
+    const contents = await execSSR({ texts, model }, "vector/embedding");
     return contents;
 }
 
@@ -520,8 +563,8 @@ export interface DocumentMetaData {
 }
 
 export interface Area {
-    startX: number;
-    startY: number;
+    x: number;
+    y: number;
     width: number;
     height: number;
     classes?: string;
@@ -537,6 +580,24 @@ export interface ContentPosition {
     height?: number;
 }
 
-export interface VectorCallOptions {
+// TODO extend filters
+export interface TextVectorCallOptions {
+    storeId?: string;
+}
+
+export interface TextIngestSettings {
     tags?: string;
+    keywords?: string;
+    relations?: [{ id: string, table: string }],
+}
+
+export interface ImageIngestSettings {
+    id?: string;
+    relations?: [{ id: string, table: string }],
+    additionalData?: string;
+}
+
+//TODO extend filters
+export interface ImageVectorCallOptions {
+    storeId?: string;
 }

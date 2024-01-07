@@ -2,7 +2,7 @@ import { displayContentAtPositions } from "../../sdk/main";
 const contentHeight = 300;
 const contentWidth = 300;
 
-export async function boardySays(message: string, x: number, y: number, width: number = contentWidth, height: number = contentHeight) {
+export async function boardySays(message: string, x: number = 1500, y: number = 500, width: number = contentWidth, height: number = contentHeight) {
     await displayContentAtPositions([{
         x,
         y,

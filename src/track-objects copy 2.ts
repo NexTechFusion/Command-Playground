@@ -45,8 +45,8 @@ async function main() {
     console.timeEnd("getActiveDisplay");
 
     const areas = response.predictions.map(o => ({
-        startX: o.x + realBounds.x,
-        startY: o.y + realBounds.y,
+        x: o.x + realBounds.x,
+        y: o.y + realBounds.y,
         width: o.width,
         height: o.height,
         classes: "rounded-md border-violet-500",

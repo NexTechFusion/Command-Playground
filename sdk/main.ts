@@ -57,15 +57,28 @@ interface OpenAppOptions {
     focus?: boolean;
     bringToFront?: boolean;
     prompt?: string;
-    stickTo?: "Right" | "Left" | "TopCenter";
+    pinRight?: boolean;
+    onCursor?: boolean;
     x?: number;
     y?: number;
     keepInteraction?: boolean;
+    closeOnBlur?: boolean;
 }
 
 // Opens the app with the given options
 export async function openApp(options?: OpenAppOptions) {
-    const code = `await openApp(${JSON.stringify(options ?? {})});`;
+    const code = `return await openApp(${JSON.stringify(options ?? {})});`;
+    const interactionId = await codeExec(code);
+    return interactionId;
+}
+
+export async function closeApp() {
+    const code = `closeApp();`;
+    await codeExec(code);
+}
+
+export async function restoreApp() {
+    const code = `restoreApp();`;
     await codeExec(code);
 }
 
@@ -75,25 +88,38 @@ export async function getAllDocs(): Promise<DocumentData[]> {
     return docs;
 }
 
-export async function getDocsBySimilarity(text: string, topK: number = 2, options: TextVectorCallOptions = {}): Promise<DocumentData[]> {
-    const code = `return await getDocsBySimilarity(\`${stripChars(text)}\`, ${topK}, ${JSON.stringify(options)});`;
+export async function getDocsBySimilarity(text: string, topK: number = 2, options: VectorCallOptions = {}, table = "global"): Promise<DocumentData[]> {
+    const code = `return await getDocsBySimilarity(\`${stripChars(text)}\`, ${topK}, ${JSON.stringify(options)}, '${table}');`;
     const docs = await codeExec(code);
     return docs;
 }
 
 // Saves the text to the instance knowledge base
-export async function ingestText(text: string, settings?: TextIngestSettings): Promise<void> {
-    const code = `await ingestText(\`${text}\`, ${JSON.stringify(settings ?? {})});`;
+export async function ingestText(text: string, settings?: TextIngestSettings, table: string = "global"): Promise<void> {
+    const code = `await ingestText(\`${text}\`, ${JSON.stringify(settings ?? {})}, '${table}');`;
     await codeExec(code);
 }
 // Saves images to achive mulitmodal search
-export async function ingesImages(images: string[], settings?: ImageIngestSettings, table?: string): Promise<void> {
-    const code = `await ingestImages(${JSON.stringify(images)}, ${JSON.stringify(settings ?? {})}, "${table}");`;
-    await codeExec(code);
+export async function ingestImages(images: string[], settings?: ImageIngestSettings, table: string = "images"): Promise<string[]> {
+    const code = `return await ingestImages(${JSON.stringify(images)}, ${JSON.stringify(settings ?? {})}, '${table}');`;
+    const paths = await codeExec(code);
+    return paths;
 }
 
-export async function getImagesBySimilarity(text: string, topK: number = 2, options: TextVectorCallOptions = {}, table?: string): Promise<DocumentData[]> {
-    const code = `return await getImagesBySimilarity(\`${stripChars(text)}\`, ${topK}, ${JSON.stringify(options)}, "${table}");`;
+export async function getImagesBySimilarity(srcOrBuffer: string | Buffer, topK: number = 2, options: VectorCallOptions = {}, table?: string): Promise<ImageStoreModel[]> {
+    const isBuffer = typeof srcOrBuffer !== "string";
+
+    if (isBuffer) {
+        srcOrBuffer = toBase64(srcOrBuffer as Buffer);
+    }
+
+    const code = `return await getImagesBySimilarity(\`${srcOrBuffer}\`, ${topK}, ${JSON.stringify(options)}, '${table}');`;
+    const docs = await codeExec(code);
+    return docs;
+}
+
+export async function getImagesByWindowName(windowName:string): Promise<ImageStoreModel[]> {
+    const code = `return await getImagesByWindowName('${windowName}');`;
     const docs = await codeExec(code);
     return docs;
 }
@@ -149,7 +175,7 @@ export async function getActiveWindow(): Promise<ScreenData> {
 
     if (!data) return null;
 
-    const buffer = Buffer.from(JSON.parse(data.fileBuffer));
+    const buffer = data.fileBuffer ? Buffer.from(JSON.parse(data.fileBuffer)) : undefined;
     return { ...data, fileBuffer: buffer } as ScreenData;
 }
 
@@ -239,6 +265,11 @@ export async function startStream(): Promise<void> {
     await codeExec(code);
 }
 
+export async function isStreaming(): Promise<boolean> {
+    const code = `return await isStreaming();`;
+    return await codeExec(code);
+}
+
 export async function waitForConfirm(text: string, buttons: { text: string, classes?: string }[]): Promise<number> {
     const code = `return await waitForConfirm(\`${stripChars(text)}\`, ${JSON.stringify(buttons)});`;
     return await codeExec(code);
@@ -274,7 +305,7 @@ export async function getWindowText(): Promise<string> {
 }
 
 export async function getActiveWindowTitle(): Promise<string> {
-    const code = `return await activeWindowTitle();`;
+    const code = `return await getActiveWindowTitle();`;
     const title = await codeExec(code);
     return title;
 }
@@ -493,6 +524,14 @@ export interface ScreenData {
     fileBuffer: Buffer;
     isAppWindow?: boolean; // if its a electron browser window
     isActiveDisplay?: boolean;
+    bounds?: IRectangle;
+}
+
+interface IRectangle {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
 }
 
 export interface CursorPosition {
@@ -581,14 +620,18 @@ export interface ContentPosition {
 }
 
 // TODO extend filters
-export interface TextVectorCallOptions {
-    storeId?: string;
+export interface VectorCallOptions {
+    where?: string;
+    filter?: string;
+    metricType?: string;
 }
 
 export interface TextIngestSettings {
+    id?: string;
     tags?: string;
     keywords?: string;
     relations?: [{ id: string, table: string }],
+    file_path?: string;
 }
 
 export interface ImageIngestSettings {
@@ -600,4 +643,13 @@ export interface ImageIngestSettings {
 //TODO extend filters
 export interface ImageVectorCallOptions {
     storeId?: string;
+}
+
+export interface ImageStoreModel {
+    id: string;
+    image: string;
+    date: string;
+    relations?: { id: string, table: string }[];
+    distance?: number;
+    path?: string;
 }

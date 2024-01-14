@@ -39,7 +39,6 @@ async function main() {
     await clearContentAtPositions();
 
     openApp({
-        stickTo: "TopCenter",
         bringToFront: true,
         keepInteraction: true,
         focus: true

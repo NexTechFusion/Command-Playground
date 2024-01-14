@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
     mode: 'production',
-    entry: './src/reface.ts',
+    entry: './src/base-rawen/command/mark-and-informate.ts',
     module: {
         rules: [
             {
@@ -16,7 +16,7 @@ module.exports = {
         extensions: ['.tsx', '.ts', '.js'],
     },
     output: {
-        filename: 'reface.js', // Output file
+        filename: 'mark-info.js', // Output file
         path: path.resolve(__dirname, 'dist'),
         libraryTarget: 'umd', // Universal module definition
     },

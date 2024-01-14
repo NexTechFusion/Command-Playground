@@ -1,5 +1,5 @@
 import { OpenAI } from "langchain/llms/openai";
-import { addResult, addPrompt, extractWebsiteContent, extractYoutubeContent, getEmbedding, pushContentStream, pushLog, endStream, waitForInput, webResearch, ingesImages, getImagesBySimilarity, waitForConfirm, waitUntilMarked, extractTextFromImage, moveMouseTo, displayContentAtPositions } from "../sdk/main";
+import { addResult, addPrompt, extractWebsiteContent, extractYoutubeContent, getEmbedding, pushContentStream, pushLog, endStream, waitForInput, webResearch, getImagesBySimilarity, waitForConfirm, waitUntilMarked, extractTextFromImage, moveMouseTo, displayContentAtPositions, getActiveWindow, isStreaming } from "../sdk/main";
 import { BaseAnswer } from "./base-rawen/base-answer";
 import { PromiseQueue } from "./common/queue.utils";
 import { BaseSummarize } from "./base-rawen/base-summarize";
@@ -14,6 +14,9 @@ import { BaseAgent } from "./base-rawen/base-rawen-agent";
 import { clusterWords } from "./common/screen-to-boundings";
 import { refaceImage } from "./common/stability-ai";
 import { boardySays } from "./common/boardy.util";
+import { segmentImage } from "./common/local-sam";
+import { BaseMarkLearn } from "./base-rawen/base-rawen-mark-learn";
+import { BaseMarkCheckKnowledge } from "./base-rawen/base-rawen-mark-knowledge";
 
 const queue = new PromiseQueue(10);
 const openAIApiKey = "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";
@@ -39,28 +42,50 @@ const chatModel = new ChatOpenAI({
     maxTokens: 3400,
     cache: false
 });
-
 async function main() {
 
     const img = "C:/repos/Command-Playground/imgs/bieber.png"
+    //img to base64
+    try {
+        // await new BaseMarkLearn().learn({
+        //     pushToStream: true
+        // });
+        if (!isStreaming()) {
+            await addPrompt("Mark and inform");
+        }
+
+        const result = await new BaseMarkCheckKnowledge().call();
+
+        if (!result) {
+            await addResult("Not found");
+            return;
+        }
+
+        const img = `${result.About_Element} <br/> <br/> <img src="${result.image.path}"}" />`;
+
+        await addResult(img);
+    } catch (err) {
+        console.error(err);
+    }
+
     // await ingesImages([img]);
 
-    const element = await waitUntilMarked();
+    // const element = await waitUntilMarked();
 
-    await boardySays("I'm analyzing the image...");
-    const newImg = await refaceImage(element.fileBuffer, element.captureRect.width, element.captureRect.height);
-    const x = element.captureRect.x;
-    const y = element.captureRect.y;
-    const width = element.captureRect.width;
-    const height = element.captureRect.height;
+    // await boardySays("I'm analyzing the image...");
+    // const newImg = await refaceImage(element.fileBuffer, element.captureRect.width, element.captureRect.height);
+    // const x = element.captureRect.x;
+    // const y = element.captureRect.y;
+    // const width = element.captureRect.width;
+    // const height = element.captureRect.height;
 
-    await displayContentAtPositions([{
-        x,
-        y,
-        width,
-        height,
-        html: `<img style="width:100%" src="data:image/png;base64,${newImg.toString("base64")}" />`
-    }]);
+    // await displayContentAtPositions([{
+    //     x,
+    //     y,
+    //     width,
+    //     height,
+    //     html: `<img style="width:100%" src="data:image/png;base64,${newImg.toString("base64")}" />`
+    // }]);
 
     // const text = await extractTextFromImage(element.fileBuffer);
     // const res = clusterWords(text.words);

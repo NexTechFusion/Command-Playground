@@ -12,7 +12,6 @@ const question = "What operating system are we on?"; // coming from app prompt, 
 async function main() {
     await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for 2 seconds
     await openApp({
-        stickTo: "Right",
         width: 400,
     });
     await addPrompt("Open-Interpreter :" + question);

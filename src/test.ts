@@ -1,5 +1,5 @@
 import { OpenAI } from "langchain/llms/openai";
-import { addResult, addPrompt, extractWebsiteContent, extractYoutubeContent, getEmbedding, pushContentStream, pushLog, endStream, waitForInput, webResearch, getImagesBySimilarity, waitForConfirm, waitUntilMarked, extractTextFromImage, moveMouseTo, displayContentAtPositions, getActiveWindow, isStreaming } from "../sdk/main";
+import { addResult, addPrompt, extractWebsiteContent, extractYoutubeContent, getEmbedding, pushContentStream, pushLog, endStream, waitForInput, webResearch, getImagesBySimilarity, waitForConfirm, waitUntilMarked, extractTextFromImage, moveMouseTo, displayContentAtPositions, getActiveWindow, isStreaming, getDocsBySimilarity, getActiveWindowTitle, markAreas, openWindow, labelImage, toBase64, writeText, dragFrom, dragTo } from "../sdk/main";
 import { BaseAnswer } from "./base-rawen/base-answer";
 import { PromiseQueue } from "./common/queue.utils";
 import { BaseSummarize } from "./base-rawen/base-summarize";
@@ -17,6 +17,9 @@ import { boardySays } from "./common/boardy.util";
 import { segmentImage } from "./common/local-sam";
 import { BaseMarkLearn } from "./base-rawen/base-rawen-mark-learn";
 import { BaseMarkCheckKnowledge } from "./base-rawen/base-rawen-mark-knowledge";
+import { BaseActiveFromKnowledge } from "./base-rawen/base-rawen-active-title-knowledge";
+import { mainerr } from "./base-rawen/command/label-active-window-command";
+import { seeActLabeler } from "./base-rawen/command/see-act-text-agent";
 
 const queue = new PromiseQueue(10);
 const openAIApiKey = "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";
@@ -45,25 +48,10 @@ const chatModel = new ChatOpenAI({
 async function main() {
 
     const img = "C:/repos/Command-Playground/imgs/bieber.png"
-    //img to base64
+
+    // //img to base64
     try {
-        // await new BaseMarkLearn().learn({
-        //     pushToStream: true
-        // });
-        if (!isStreaming()) {
-            await addPrompt("Mark and inform");
-        }
-
-        const result = await new BaseMarkCheckKnowledge().call();
-
-        if (!result) {
-            await addResult("Not found");
-            return;
-        }
-
-        const img = `${result.About_Element} <br/> <br/> <img src="${result.image.path}"}" />`;
-
-        await addResult(img);
+        // await main("Im playing solitaire, tell me the next step?");
     } catch (err) {
         console.error(err);
     }

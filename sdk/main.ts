@@ -106,7 +106,7 @@ export async function ingestImages(images: string[], settings?: ImageIngestSetti
     return paths;
 }
 
-export async function getImagesBySimilarity(srcOrBuffer: string | Buffer, topK: number = 2, options: VectorCallOptions = {}, table?: string): Promise<ImageStoreModel[]> {
+export async function getImagesBySimilarity(srcOrBuffer: string | Buffer, topK: number = 2, options: VectorCallOptions = {}, table: string = "images"): Promise<ImageStoreModel[]> {
     const isBuffer = typeof srcOrBuffer !== "string";
 
     if (isBuffer) {
@@ -118,7 +118,7 @@ export async function getImagesBySimilarity(srcOrBuffer: string | Buffer, topK: 
     return docs;
 }
 
-export async function getImagesByWindowName(windowName:string): Promise<ImageStoreModel[]> {
+export async function getImagesByWindowName(windowName: string): Promise<ImageStoreModel[]> {
     const code = `return await getImagesByWindowName('${windowName}');`;
     const docs = await codeExec(code);
     return docs;
@@ -175,7 +175,11 @@ export async function getActiveWindow(): Promise<ScreenData> {
 
     if (!data) return null;
 
-    const buffer = data.fileBuffer ? Buffer.from(JSON.parse(data.fileBuffer)) : undefined;
+    if (data.fileBuffer == null) {
+        return null;
+    }
+
+    const buffer = Buffer.from(JSON.parse(data.fileBuffer));
     return { ...data, fileBuffer: buffer } as ScreenData;
 }
 
@@ -190,8 +194,8 @@ export async function openLastWindow(click = false): Promise<void> {
     await codeExec(code);
 }
 
-export async function openWindow(id, click = false): Promise<void> {
-    const code = `await openWindow(${id},${click});`;
+export async function openWindow(idOrName, options?: { click?: boolean, bounds?: { x: number, y: number, width: number, height: number } }): Promise<void> {
+    const code = `await openWindow(\`${idOrName}\`, \`${JSON.stringify(options)}\`);`;
     await codeExec(code);
 }
 
@@ -323,6 +327,21 @@ export async function moveMouseTo(x: number, y: number): Promise<void> {
 
 export async function mouseClickLeft(): Promise<void> {
     const code = `await mouseClick();`;
+    await codeExec(code);
+}
+
+export async function mouseDoubleClick(): Promise<void> {
+    const code = `await mouseDoubleClick();`;
+    await codeExec(code);
+}
+
+export async function dragFrom(x: number, y: number): Promise<void> {
+    const code = `await dragFrom(${x}, ${y});`;
+    await codeExec(code);
+}
+
+export async function dragTo(x: number, y: number): Promise<void> {
+    const code = `await dragTo(${x}, ${y});`;
     await codeExec(code);
 }
 
@@ -479,6 +498,17 @@ export async function webResearch(query: string): Promise<{ url: string, content
 export async function getEmbedding(texts: string[], model?: string): Promise<any> {
     const contents = await execSSR({ texts, model }, "vector/embedding");
     return contents;
+}
+
+export async function labelImage(imgSrc: string | Buffer): Promise<{ img: Buffer, fields: { number: number, rect: { x, y, width, height } }[] }> {
+
+    if (typeof imgSrc !== "string") {
+        imgSrc = toBase64(imgSrc);
+    }
+
+    const code = `return await labelImage(\`${imgSrc}\`);`;
+    const contents = await codeExec(code);
+    return { img: Buffer.from(JSON.parse(contents.imgBufferStr)), fields: contents.fields };
 }
 
 function encodeContent(content: any): string {

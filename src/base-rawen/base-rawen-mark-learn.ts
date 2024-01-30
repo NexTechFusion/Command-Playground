@@ -22,13 +22,12 @@ export class BaseMarkLearn {
             try {
                 // ==== Mark ====
                 const element = await waitUntilMarked();
-                const window = await getActiveWindow();
                 await markAreas([{
                     ...element.captureRect,
                     label: "Tell me a bit about this marked element",
                     labelClasses: "p-2 bg-white rounded-md shadow-md text-base",
                 }]);
-
+                
                 await openApp({
                     keepInteraction: true,
                     bringToFront: true,
@@ -37,16 +36,17 @@ export class BaseMarkLearn {
                     onCursor: true,
                     width: 400,
                 });
-
+                
                 const explain = await waitForInput();
                 await restoreApp();
-
+                
                 let text = null;
                 if (options?.scanText) {
                     text = await extractTextFromImage(element.fileBuffer);
                 }
-
+                
                 // ==== Ingest ====
+                const window = await getActiveWindow();
                 const imageGuid = "Element_Descrption_" + Math.random().toString(36).substring(7);
                 const textGuid = "Element_Descrption_" + Math.random().toString(36).substring(7);
                 const imageBase64 = toBase64(element.fileBuffer);
@@ -54,6 +54,7 @@ export class BaseMarkLearn {
                 const paths = await ingestImages([imageBase64], {
                     id: imageGuid,
                     relations: [{ id: textGuid, table: this.defaultTextTable }],
+                    additionalData: window.name
                 }, this.defaultImageTable);
 
                 await ingestText(this.buildText(explain, element.captureRect, { width: window.bounds.width, height: window.bounds.height }, text), {
@@ -96,8 +97,8 @@ export class BaseMarkLearn {
             ${eplxaination}
         </About_Element>
         ${elementText ? `<Element_Text>${elementText}</Element_Text>` : ""}
-        </Element_Size>{ "width":${rect.width}, "height":${rect.height} } </Element_Size>
-        <Element_Position>{ "x":${rect.x}, "y":${rect.y} } </Element_Position> 
-        <Window_Sizes>{ "width":${window.width}, "height":${window.height} } </Window_Sizes>`.trim();
+        <Element_Size> { "width":${rect.width}, "height":${rect.height} } </Element_Size>
+        <Element_Position> { "x":${rect.x}, "y":${rect.y} } </Element_Position> 
+        <Window_Sizes> { "width":${window.width}, "height":${window.height} } </Window_Sizes>`.trim();
     }
 }

@@ -10,7 +10,7 @@ export class BaseVision {
         this.llm = llm;
     }
 
-    async call(imageSrcOrBuffer: string | Buffer, question?: string, callback?: (prompt: string) => void) {
+    async call(imageSrcOrBuffer: string | Buffer, question?: string, callback?: (prompt: string) => void): Promise<string> {
         return new Promise(async (resolve, reject) => {
             try {
                 if (!Buffer.isBuffer(imageSrcOrBuffer)) {
@@ -19,7 +19,9 @@ export class BaseVision {
                     imageSrcOrBuffer = Buffer.from(arrayBuffer);
                 }
 
-                imageSrcOrBuffer = `data:image/png;base64,${imageSrcOrBuffer.toString("base64")}`
+                if (!imageSrcOrBuffer.toString().startsWith("data:image")) {
+                    imageSrcOrBuffer = `data:image/png;base64,${imageSrcOrBuffer.toString("base64")}`
+                }
 
                 const prompt = ChatPromptTemplate.fromMessages([
                     new MessagesPlaceholder("input")
@@ -36,7 +38,7 @@ export class BaseVision {
                                 },
                                 {
                                     type: "image_url",
-                                    image_url: { url: imageSrcOrBuffer }
+                                    image_url: { url: imageSrcOrBuffer as string }
                                 }
                             ],
                         }),
